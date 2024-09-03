@@ -67,17 +67,20 @@ impl Display for ChatLastMessageOld {
         if let Some(ref username) = self.username {
             write!(
                 f,
-                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n\t{message}",
+                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n{message}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
                 name = self.name,
-                access_hash = self.packed.access_hash.map_or("unknown".to_owned(), |access_hash| access_hash.to_string()),
+                access_hash = self
+                    .packed
+                    .access_hash
+                    .map_or("unknown".to_owned(), |access_hash| access_hash.to_string()),
                 message = self.message,
             )
         } else {
             write!(
                 f,
-                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n\t{message}",
+                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n{message}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
                 name = self.name,
@@ -101,7 +104,7 @@ impl Display for LeavedMessageOld {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Chat({chat_id}, title={title})\n\t{message}",
+            "Chat({chat_id}, title={title})\n{message}",
             chat_id = self.chat.id,
             title = self.chat.title,
             message = self.message,
@@ -120,7 +123,7 @@ impl Display for LeavedChannelMessageOld {
         if let Some(ref username) = self.channel.username {
             write!(
                 f,
-                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n\t{message}",
+                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n{message}",
                 chat_id = self.channel.id,
                 title = self.channel.title,
                 access_hash = self
@@ -132,7 +135,7 @@ impl Display for LeavedChannelMessageOld {
         } else {
             write!(
                 f,
-                "Channel({chat_id}, title={title}, access_hash={access_hash})\n\t{message}",
+                "Channel({chat_id}, title={title}, access_hash={access_hash})\n{message}",
                 chat_id = self.channel.id,
                 title = self.channel.title,
                 access_hash = self
@@ -158,19 +161,20 @@ impl Display for LastMessagesOld {
         if let Some(ref username) = self.username {
             write!(
                 f,
-                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n\t{messages}",
+                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n{messages}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
-                name = self.name,access_hash = self
-                .packed
-                .access_hash
-                .map_or("unknown".to_owned(), |access_hash| access_hash.to_string()),
+                name = self.name,
+                access_hash = self
+                    .packed
+                    .access_hash
+                    .map_or("unknown".to_owned(), |access_hash| access_hash.to_string()),
                 messages = self.messages
             )
         } else {
             write!(
                 f,
-                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n\t{messages}",
+                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n{messages}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
                 name = self.name,
@@ -194,7 +198,7 @@ impl Display for LeavedMessagesOld {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Chat({chat_id}, title={title})\n\t{messages}",
+            "Chat({chat_id}, title={title})\n{messages}",
             chat_id = self.chat.id,
             title = self.chat.title,
             messages = self.messages,
@@ -213,7 +217,7 @@ impl Display for LeavedChannelMessagesOld {
         if let Some(ref username) = self.channel.username {
             write!(
                 f,
-                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n\t{messages}",
+                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n{messages}",
                 chat_id = self.channel.id,
                 title = self.channel.title,
                 access_hash = self
@@ -225,7 +229,7 @@ impl Display for LeavedChannelMessagesOld {
         } else {
             write!(
                 f,
-                "Channel({chat_id}, title={title}, access_hash={access_hash})\n\t{messages}",
+                "Channel({chat_id}, title={title}, access_hash={access_hash})\n{messages}",
                 chat_id = self.channel.id,
                 title = self.channel.title,
                 access_hash = self
@@ -299,7 +303,7 @@ impl Display for MessagesCountSmall {
         if let Some(ref username) = self.username {
             write!(
                 f,
-                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n\t{messages}",
+                "{ty}({chat_id}, @{username}, title={name}, access_hash={access_hash})\n{messages}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
                 name = self.name,
@@ -312,7 +316,7 @@ impl Display for MessagesCountSmall {
         } else {
             write!(
                 f,
-                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n\t{messages}",
+                "{ty}({chat_id}, title={name}, access_hash={access_hash})\n{messages}",
                 ty = self.packed.ty,
                 chat_id = self.packed.id,
                 name = self.name,
@@ -336,7 +340,7 @@ impl Display for LeavedMessagesCountSmall {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Chat({chat_id}, title={title})\n\t{messages}",
+            "Chat({chat_id}, title={title})\n{messages}",
             chat_id = self.chat.id,
             title = self.chat.title,
             messages = self.messages,
@@ -355,7 +359,7 @@ impl Display for LeavedChannelMessagesCountSmall {
         if let Some(ref username) = self.channel.username {
             write!(
                 f,
-                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n\t{messages}",
+                "Channel({chat_id}, @{username}, title={title}, access_hash={access_hash})\n{messages}",
                 chat_id = self.channel.id,
                 messages = self.messages,
                 access_hash = self
@@ -367,7 +371,7 @@ impl Display for LeavedChannelMessagesCountSmall {
         } else {
             write!(
                 f,
-                "Channel({chat_id}, title={title}, access_hash={access_hash})\n\t{messages}",
+                "Channel({chat_id}, title={title}, access_hash={access_hash})\n{messages}",
                 chat_id = self.channel.id,
                 messages = self.messages,
                 access_hash = self

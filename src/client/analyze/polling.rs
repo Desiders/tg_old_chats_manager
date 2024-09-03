@@ -72,7 +72,7 @@ pub async fn get_chats(client: &Client) -> Result<Vec<Chat>, InvocationError> {
 
     let now_time = Utc::now().time();
 
-    while let Some(Dialog {
+    'outer: while let Some(Dialog {
         chat, last_message, ..
     }) = dialogs.next().await?
     {
@@ -124,7 +124,23 @@ pub async fn get_chats(client: &Client) -> Result<Vec<Chat>, InvocationError> {
 
         let mut messages_iter = client.iter_messages(&chat).limit(LAST_MESSAGES_LIMIT);
         let mut messages = Vec::with_capacity(LAST_MESSAGES_LIMIT);
-        while let Some(message) = messages_iter.next().await? {
+        while let Some(message) = match messages_iter.next().await {
+            Ok(message) => message,
+            Err(err) => {
+                match err {
+                    InvocationError::Rpc(RpcError {
+                        code: _code @ 400, ..
+                    }) => {
+                        debug!(parent: &span, "Chat is private");
+                    }
+                    _ => {
+                        error!(parent: &span, %err, "Error while get chat messages");
+                    }
+                };
+
+                continue 'outer;
+            }
+        } {
             messages.push(message);
         }
 
@@ -250,10 +266,10 @@ pub async fn get_left_chats(
                             InvocationError::Rpc(RpcError {
                                 code: _code @ 400, ..
                             }) => {
-                                debug!(parent: &span, "Chat is private");
+                                debug!(parent: &span, "Group is private");
                             }
                             _ => {
-                                error!(parent: &span, %err, "Error while get chat messages");
+                                error!(parent: &span, %err, "Error while get group messages");
                             }
                         };
 
@@ -264,7 +280,7 @@ pub async fn get_left_chats(
                 }
 
                 if messages_count_is_too_small(messages.len()) {
-                    debug!(parent: &span, "Messages count in the leaved chat is too small");
+                    debug!(parent: &span, "Messages count in the leaved group is too small");
 
                     chats.push(Chat::LeavedMessagesCountSmall(LeavedMessagesCountSmall {
                         chat,
@@ -283,7 +299,7 @@ pub async fn get_left_chats(
                     now_time,
                     OLD_MESSAGE_ELAPSED_DAYS * CHANNEL_ELAPSED_MULTIPLIER,
                 ) {
-                    debug!(parent: &span, "Found an old leaved chat by last message");
+                    debug!(parent: &span, "Found an old leaved group by last message");
 
                     chats.push(Chat::LeavedMessageOld(LeavedMessageOld {
                         chat,
@@ -293,7 +309,7 @@ pub async fn get_left_chats(
                     &messages,
                     ELAPSED_DAYS_BETWEEN_OLD_MESSAGES * CHANNEL_ELAPSED_MULTIPLIER,
                 ) {
-                    debug!(parent: &span, "Found an old leaved chat by last messages which are periodically sent with high delay");
+                    debug!(parent: &span, "Found an old leaved group by last messages which are periodically sent with high delay");
 
                     chats.push(Chat::LeavedMessagesOld(LeavedMessagesOld {
                         chat,
@@ -399,7 +415,7 @@ pub async fn get_left_chats(
                 }
             }
             enums::Chat::Forbidden(_) => {
-                trace!(parent: &span, "Chat forbidden");
+                trace!(parent: &span, "Group forbidden");
             }
             enums::Chat::ChannelForbidden(_) => {
                 trace!(parent: &span, "Channel forbidden");

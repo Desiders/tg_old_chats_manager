@@ -41,7 +41,6 @@ pub async fn analyze(config: Analyze, client: &Client) -> Result<(), InvocationE
                 Ok(val) => val,
                 Err(err) => {
                     debug!(%err, "Error while get invite link");
-
                     None
                 }
             }
