@@ -1,3 +1,5 @@
+use std::process;
+
 use super::models::{Analyze, Delete, Join};
 use crate::client::{
     analyze::{self, Chat},
@@ -21,7 +23,26 @@ pub async fn analyze(config: Analyze, client: &Client) -> Result<(), InvocationE
     if config.left {
         println!("Analyze the chats that you're left. It may take a few minutes.");
 
-        let takeout_id = analyze::init_takeout_session(client).await?;
+        let takeout_id = match analyze::init_takeout_session(client).await {
+            Ok(takeout_id) => takeout_id,
+            Err(err) => {
+                match err {
+                    InvocationError::Rpc(RpcError {
+                        code: code @ 420,
+                        value,
+                        ..
+                    }) => {
+                        error!(?value, code, "Sorry, for security reasons, you will be able to begin downloading your data in %d seconds. We have notified all your devices about the export request to make sure it's authorized and to give you time to react if it's not.");
+                    }
+                    _ => {
+                        error!(%err, "Error while get group messages");
+                    }
+                };
+
+                process::exit(1);
+            }
+        };
+
         let success = match analyze::get_left_chats(client, takeout_id).await {
             Ok(left_chats) => {
                 chats = chats.into_iter().chain(left_chats).collect();
