@@ -28,11 +28,11 @@ pub async fn analyze(config: Analyze, client: &Client) -> Result<(), InvocationE
             Err(err) => {
                 match err {
                     InvocationError::Rpc(RpcError {
-                        code: _code @ 420,
+                        code: code @ 420,
                         value,
                         ..
                     }) => {
-                        debug!(?value, "Sorry, for security reasons, you will be able to begin downloading your data in %d seconds. We have notified all your devices about the export request to make sure it's authorized and to give you time to react if it's not.");
+                        error!(?value, code, "Sorry, for security reasons, you will be able to begin downloading your data in %d seconds. We have notified all your devices about the export request to make sure it's authorized and to give you time to react if it's not.");
                     }
                     _ => {
                         error!(%err, "Error while get group messages");
